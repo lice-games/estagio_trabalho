@@ -83,6 +83,17 @@ const getBadgeStyles = (badge) => {
     return 'linear-gradient(90deg, #6b7280 0%, #4b5563 100%)';
 };
 
+const categoryGradients = {
+    'Material': ['#f97316', '#eab308'],
+    'Transporte': ['#ec4899', '#8b5cf6'],
+    'Mão de Obra': ['#22c55e', '#10b981'],
+    'Alimentação': ['#a855f7', '#6366f1'],
+    'Equipamento': ['#06b6d4', '#3b82f6'],
+    'default': ['#6b7280', '#4b5563']
+};
+
+let donutChartInstance = null;
+
 function saveItems() {
     localStorage.setItem('items_data', JSON.stringify(items_data));
     currentItems = items_data.filter(i => i.projectId === currentProjectId);
@@ -260,6 +271,108 @@ function renderCards() {
                     </div>
                 `;
         container.insertAdjacentHTML('beforeend', cardHTML);
+    });
+
+    renderAnalytics();
+}
+
+function renderAnalytics() {
+    if (currentItems.length === 0) {
+        document.getElementById('analyticsContainer').style.display = 'none';
+        return;
+    }
+
+    // Calculate category totals
+    let totalProjectCost = 0;
+    const categoryTotals = {};
+    
+    currentItems.forEach(item => {
+        const val = parseFloat(item.valor) || 0;
+        totalProjectCost += val;
+        if (val > 0) {
+            if (!categoryTotals[item.badge]) {
+                categoryTotals[item.badge] = 0;
+            }
+            categoryTotals[item.badge] += val;
+        }
+    });
+
+    if (totalProjectCost === 0 || Object.keys(categoryTotals).length === 0) {
+        document.getElementById('analyticsContainer').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('analyticsContainer').style.display = 'grid';
+
+    const categories = Object.keys(categoryTotals);
+    const dataValues = categories.map(c => categoryTotals[c]);
+    const percentages = dataValues.map(v => Math.round((v / totalProjectCost) * 100));
+
+    const canvas = document.getElementById('categoryDonutChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const backgroundColors = categories.map(c => {
+        const colors = categoryGradients[c] || categoryGradients['default'];
+        const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0, colors[0]);
+        gradient.addColorStop(1, colors[1]);
+        return gradient;
+    });
+
+    if (donutChartInstance) {
+        donutChartInstance.destroy();
+    }
+
+    if (window.Chart) {
+        Chart.defaults.color = '#9ca3af';
+        Chart.defaults.font.family = 'Inter';
+
+        donutChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: percentages,
+                    backgroundColor: backgroundColors,
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Render custom legend
+    const legendContainer = document.getElementById('donutLegend');
+    legendContainer.innerHTML = '';
+    
+    categories.forEach((cat, index) => {
+        const colors = categoryGradients[cat] || categoryGradients['default'];
+        const p = percentages[index];
+        const html = `
+            <div class="legend-item">
+                <div class="legend-dot" style="border-color: ${colors[0]};"></div>
+                ${cat} ${p}%
+            </div>
+        `;
+        legendContainer.insertAdjacentHTML('beforeend', html);
     });
 }
 
