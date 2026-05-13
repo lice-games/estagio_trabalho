@@ -50,10 +50,10 @@
         };
 
         const getStatusStyles = (status) => {
-            if (status === 'Parcial') return `background-color: var(--tag-parcial-bg); color: var(--tag-parcial-text);`;
-            if (status === 'Pendente') return `background-color: var(--tag-pendente-bg); color: var(--tag-pendente-text);`;
-            if (status === 'Pago') return `background-color: var(--tag-pago-bg); color: var(--tag-pago-text);`;
-            return `background-color: #333; color: #fff;`;
+            if (status === 'Parcial') return `background-color: #161825; color: #60a5fa; border: 1px solid #60a5fa;`;
+            if (status === 'Pendente') return `background-color: #161825; color: #f87171; border: 1px solid #f87171;`;
+            if (status === 'Pago') return `background-color: #161825; color: #22c55e; border: 1px solid #22c55e;`;
+            return `background-color: #161825; color: #fff; border: 1px solid #fff;`;
         };
 
         const getPaymentMethodIcon = (method) => {
@@ -75,12 +75,12 @@
         };
 
         const getBadgeStyles = (badge) => {
-            if (badge === 'Material') return { dot: '#f59e0b', color: '#f59e0b' };
-            if (badge === 'Transporte') return { dot: '#ec4899', color: '#ec4899' };
-            if (badge === 'Mão de Obra') return { dot: '#22c55e', color: '#22c55e' };
-            if (badge === 'Alimentação') return { dot: '#a855f7', color: '#a855f7' }; // purple
-            if (badge === 'Equipamento') return { dot: '#06b6d4', color: '#06b6d4' }; // cyan
-            return { dot: '#fff', color: '#fff' };
+            if (badge === 'Material') return 'linear-gradient(90deg, #f97316 0%, #eab308 100%)';
+            if (badge === 'Transporte') return 'linear-gradient(90deg, #ec4899 0%, #8b5cf6 100%)';
+            if (badge === 'Mão de Obra') return 'linear-gradient(90deg, #22c55e 0%, #10b981 100%)';
+            if (badge === 'Alimentação') return 'linear-gradient(90deg, #a855f7 0%, #6366f1 100%)';
+            if (badge === 'Equipamento') return 'linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%)';
+            return 'linear-gradient(90deg, #6b7280 0%, #4b5563 100%)';
         };
 
         function saveItems() {
@@ -211,40 +211,47 @@
 
                         <!-- Card View -->
                         <div class="card" onclick="viewItem(${item.id})">
-                            <div class="card-header">
-                                <h3 class="card-title">${item.name}</h3>
-                                <span class="tag" style="${getStatusStyles(status)}">${status}</span>
+                            <div class="card-header" style="align-items: flex-start; margin-bottom: 8px;">
+                                <div style="display:flex; flex-direction:column; gap: 4px; padding-right: 12px; overflow: hidden;">
+                                    <h3 class="card-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h3>
+                                    <p class="card-desc-text" style="margin: 0; color: var(--text-secondary); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        ${item.observacoes || 'Nenhuma observação'}
+                                    </p>
+                                </div>
+                                <span class="tag" style="${getStatusStyles(status)} flex-shrink: 0; font-size: 10px; padding: 2px 8px;">${status}</span>
                             </div>
                             
-                            <div class="card-financials">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                    <div class="money-total">Custo: ${formatMoney(valor)}</div>
+                            <div class="card-financials" style="background-color: transparent; padding: 0; margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                                <div style="font-size: 12px; color: #60a5fa; display: flex; align-items: center; gap: 4px;">
+                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4l-8 8 8 8 8-8-8-8z"></path></svg>
+                                    ${formatMoney(valor)}
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div class="money-total">Pago:</div>
-                                    <div class="money-balance" style="color: ${statusColor}">${formatMoney(valorPago)}</div>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <div class="money-balance" style="color: ${statusColor}; font-size: 20px;">${formatMoney(valorPago)}</div>
                                 </div>
                             </div>
+                            
+                            <hr style="border: 0; border-bottom: 1px solid var(--border-color); margin-bottom: 16px;">
 
                             <div class="card-deadline" style="color: ${deadlineColor}; ${isPastDeadline && !isFullyPaid ? 'font-weight: 600;' : ''}">
                                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                Prazo: ${formatDateBR(item.deadline)}
+                                Deadline: ${formatDateBR(item.deadline)}
                             </div>
 
-                            <div class="card-progress-row">
-                                <div class="card-progress-bar">
-                                    <div class="card-progress-fill" style="width: ${progressPercent}%;"></div>
-                                </div>
-                                <span style="font-size: 12px; font-weight: 600;">${progressPercent}%</span>
+                            <div style="display: flex; justify-content: flex-end; font-size: 12px; font-weight: 600; margin-bottom: 6px; margin-top: -14px;">
+                                ${progressPercent}%
+                            </div>
+                            <div class="card-progress-bar" style="margin-bottom: 16px;">
+                                <div class="card-progress-fill" style="width: ${progressPercent}%;"></div>
                             </div>
 
-                            <div class="card-footer">
-                                <div class="payment-method">
-                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                            <div class="card-footer" style="margin-top: 4px;">
+                                <div class="badge" style="background: ${getBadgeStyles(item.badge)}; color: #fff; border-radius: 12px; padding: 4px 12px; font-weight: 600; border: none;">
+                                    <svg style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-top: -2px; margin-right: 4px;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                                     ${item.badge}
                                 </div>
 
-                                <div class="badge" style="color: ${pmStyles.color}">
+                                <div class="payment-method" style="color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
                                     ${getPaymentMethodIcon(item.paymentMethod)}
                                     ${item.paymentMethod || 'N/A'}
                                 </div>
