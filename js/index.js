@@ -55,7 +55,10 @@
 
                 // Any item not fully paid is considered pending/partial for deadline calculation
                 if (paid < val) {
-                    const itemDeadline = new Date(item.deadline).getTime();
+                    const itemDeadlineDate = new Date(item.deadline);
+                    itemDeadlineDate.setMinutes(itemDeadlineDate.getMinutes() + itemDeadlineDate.getTimezoneOffset());
+                    const itemDeadline = itemDeadlineDate.getTime();
+                    
                     if (itemDeadline < closestDeadline) {
                         closestDeadline = itemDeadline;
                         unpaidItemName = formatDateBR(item.deadline);
@@ -66,13 +69,17 @@
             const progress = totalValue === 0 ? 0 : Math.round((paidValue / totalValue) * 100);
             const devendo = totalValue - paidValue;
             
+            const isExpired = closestDeadline !== Infinity && closestDeadline < new Date().setHours(0,0,0,0);
+            const isUrgent = closestDeadline !== Infinity && (closestDeadline - Date.now() < 7 * 24 * 60 * 60 * 1000);
+
             return {
                 progress,
                 totalValue,
                 devendo,
                 closestDeadline,
                 unpaidItemName: closestDeadline === Infinity ? "N/A" : unpaidItemName,
-                isUrgent: closestDeadline !== Infinity && (closestDeadline - Date.now() < 7 * 24 * 60 * 60 * 1000) // less than 7 days
+                isUrgent: isUrgent,
+                isExpired: isExpired
             };
         }
 
@@ -134,21 +141,25 @@
                             <h3 class="card-title-text">${p.name}</h3>
                             <p class="card-desc-text">${p.description}</p>
                             
-                            <div class="card-financials">
-                                <div class="financial-row">
-                                    <span class="financial-label">Custo Total:</span>
-                                    <span class="financial-value" style="color: var(--text-primary);">${formatMoney(p.stats.totalValue)}</span>
+                            <div class="card-financials" style="background-color: transparent; padding: 0; margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                                <div style="font-size: 12px; color: #60a5fa; display: flex; align-items: center; gap: 4px;">
+                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4l-8 8 8 8 8-8-8-8z"></path></svg>
+                                    ${formatMoney(p.stats.totalValue)}
                                 </div>
-                                <div class="financial-row">
-                                    <span class="financial-label">Falta Pagar:</span>
-                                    <span class="financial-value" style="color: #ef4444;">${formatMoney(p.stats.devendo)}</span>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <div class="money-balance" style="color: ${p.stats.isExpired ? '#ef4444' : '#fff'}; font-size: 20px;">${formatMoney(p.stats.devendo)}</div>
                                 </div>
                             </div>
                             
-                            <div class="card-deadline">
-                                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Próximo Vencimento: 
-                                <span class="${p.stats.isUrgent ? 'deadline-highlight' : ''}" style="margin-left:4px;">
+                            <hr style="border: 0; border-bottom: 1px solid var(--border-color); margin-bottom: 16px;">
+                            
+                            <div class="card-deadline" style="color: ${p.stats.isExpired ? '#ef4444' : 'var(--text-secondary)'}; ${p.stats.isExpired ? 'font-weight: 600;' : ''}">
+                                ${p.stats.isExpired 
+                                    ? '<svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>'
+                                    : '<svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+                                }
+                                ${p.stats.isExpired ? 'Vencido:' : 'Próximo Vencimento:'} 
+                                <span class="${p.stats.isUrgent && !p.stats.isExpired ? 'deadline-highlight' : ''}" style="margin-left:4px;">
                                     ${p.stats.unpaidItemName}
                                 </span>
                             </div>
