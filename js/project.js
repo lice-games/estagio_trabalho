@@ -353,6 +353,15 @@ function renderAnalytics() {
                     },
                     tooltip: {
                         usePointStyle: true,
+                        backgroundColor: '#161825',
+                        borderWidth: 2,
+                        borderColor: function(context) {
+                            if (context.tooltip && context.tooltip.dataPoints && context.tooltip.dataPoints.length > 0) {
+                                const index = context.tooltip.dataPoints[0].dataIndex;
+                                return categories[index] ? (categoryGradients[categories[index]] || categoryGradients['default'])[0] : '#ffffff';
+                            }
+                            return '#ffffff';
+                        },
                         callbacks: {
                             labelPointStyle: function(context) {
                                 return {
@@ -370,7 +379,7 @@ function renderAnalytics() {
             },
             plugins: [{
                 id: 'glowPlugin',
-                afterDraw: chart => {
+                beforeTooltipDraw: chart => {
                     const activeElements = chart.getActiveElements();
                     if (activeElements.length > 0) {
                         const ctx = chart.ctx;
