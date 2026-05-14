@@ -366,10 +366,11 @@ function renderAnalytics() {
     categories.forEach((cat, index) => {
         const colors = categoryGradients[cat] || categoryGradients['default'];
         const p = percentages[index];
+        const v = dataValues[index];
         const html = `
             <div class="legend-item">
                 <div class="legend-dot" style="border-color: ${colors[0]};"></div>
-                ${cat} ${p}%
+                ${cat}: (${formatMoney(v)}) <strong>${p}%</strong>
             </div>
         `;
         legendContainer.insertAdjacentHTML('beforeend', html);
