@@ -335,11 +335,15 @@ function renderAnalytics() {
                 datasets: [{
                     data: percentages,
                     backgroundColor: backgroundColors,
+                    hoverBackgroundColor: '#ffffff',
                     borderWidth: 0,
-                    hoverOffset: 4
+                    hoverOffset: 15
                 }]
             },
             options: {
+                layout: {
+                    padding: 20
+                },
                 responsive: true,
                 maintainAspectRatio: false,
                 cutout: '75%',
@@ -348,14 +352,45 @@ function renderAnalytics() {
                         display: false
                     },
                     tooltip: {
+                        usePointStyle: true,
                         callbacks: {
+                            labelPointStyle: function(context) {
+                                return {
+                                    pointStyle: 'circle',
+                                    rotation: 0
+                                };
+                            },
                             label: function(context) {
-                                return context.label + ': ' + context.raw + '%';
+                                const val = dataValues[context.dataIndex];
+                                return context.label + ': ' + formatMoney(val) + ' (' + context.raw + '%)';
                             }
                         }
                     }
                 }
-            }
+            },
+            plugins: [{
+                id: 'glowPlugin',
+                afterDraw: chart => {
+                    const activeElements = chart.getActiveElements();
+                    if (activeElements.length > 0) {
+                        const ctx = chart.ctx;
+                        const activeEl = activeElements[0];
+                        const index = activeEl.index;
+                        const element = activeEl.element;
+                        
+                        const catColor = categories[index] ? (categoryGradients[categories[index]] || categoryGradients['default'])[0] : '#ffffff';
+
+                        ctx.save();
+                        ctx.shadowColor = catColor;
+                        ctx.shadowBlur = 20;
+                        ctx.shadowOffsetX = 0;
+                        ctx.shadowOffsetY = 0;
+                        
+                        element.draw(ctx);
+                        ctx.restore();
+                    }
+                }
+            }]
         });
     }
 
@@ -366,11 +401,10 @@ function renderAnalytics() {
     categories.forEach((cat, index) => {
         const colors = categoryGradients[cat] || categoryGradients['default'];
         const p = percentages[index];
-        const v = dataValues[index];
         const html = `
             <div class="legend-item">
                 <div class="legend-dot" style="border-color: ${colors[0]};"></div>
-                ${cat}: (${formatMoney(v)}) <strong>${p}%</strong>
+                ${cat}: <strong>${p}%</strong>
             </div>
         `;
         legendContainer.insertAdjacentHTML('beforeend', html);
