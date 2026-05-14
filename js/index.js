@@ -147,7 +147,7 @@
                                     ${formatMoney(p.stats.totalValue)}
                                 </div>
                                 <div style="display: flex; justify-content: flex-end;">
-                                    <div class="money-balance" style="color: ${p.stats.isExpired ? '#ef4444' : '#fff'}; font-size: 20px;">${formatMoney(p.stats.devendo)}</div>
+                                    <div class="money-balance" style="color: #ef4444; font-size: 20px;">${formatMoney(p.stats.devendo)}</div>
                                 </div>
                             </div>
                             

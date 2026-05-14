@@ -98,31 +98,6 @@
             <!-- Cards will be rendered here by JS -->
         </div>
 
-        <!-- Analytics Grid -->
-        <div class="analytics-grid" id="analyticsContainer" style="display: none;">
-            <div class="analytics-card">
-                <div class="analytics-header">
-                    <h3>My Progress</h3>
-                    <select class="analytics-select">
-                        <option>Weekly</option>
-                        <option>Monthly</option>
-                    </select>
-                </div>
-                <div class="analytics-body" style="display: flex; gap: 24px; align-items: center;">
-                    <div style="position: relative; width: 200px; height: 200px;">
-                        <canvas id="categoryDonutChart"></canvas>
-                        <div class="donut-center-text">
-                            <span>Lucro</span>
-                            <span style="font-weight: 600; color: white;">por categoria</span>
-                        </div>
-                    </div>
-                    <div class="analytics-legend" id="donutLegend">
-                        <!-- Legend will be rendered by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </main>
 
     <!-- Modal for New/Edit Item -->
@@ -205,7 +180,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/project.js"></script>
 </body>
 </html>
