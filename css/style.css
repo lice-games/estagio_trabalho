@@ -650,6 +650,33 @@
             font-size: 13px;
             color: var(--text-secondary);
             font-weight: 600;
+            cursor: help;
+        }
+
+        .progress-bar-container {
+            cursor: help;
+        }
+
+        .progress-tooltip {
+            position: fixed;
+            pointer-events: none;
+            background-color: #161825;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: translate(-50%, -130%);
+            transition: opacity 0.12s;
+            z-index: 1000;
+        }
+
+        .progress-tooltip.visible {
+            opacity: 1;
         }
 
         /* Cards Grid */

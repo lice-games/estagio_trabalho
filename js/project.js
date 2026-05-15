@@ -34,6 +34,10 @@ let currentItems = items_data.filter(i => i.projectId === currentProjectId);
 let activeFilters = [];
 let searchQuery = '';
 
+// Global progress state (for tooltip)
+let currentTotalValue = 0;
+let currentPaidValue = 0;
+
 document.getElementById('mainProjectTitle').innerText = currentProject.name;
 
 // Track recently opened projects
@@ -132,6 +136,9 @@ function updateGlobalProgress() {
     const progress = totalValue === 0 ? 0 : Math.round((paidValue / totalValue) * 100);
     document.getElementById('globalProgressBar').style.width = progress + '%';
     document.getElementById('globalProgressText').innerText = progress + '%';
+
+    currentTotalValue = totalValue;
+    currentPaidValue = paidValue;
 
     // Header stats panel
     const isExpired = closestDeadline !== Infinity && closestDeadline < new Date().setHours(0, 0, 0, 0);
@@ -814,6 +821,48 @@ newProjectForm.addEventListener('submit', (e) => {
     // Redirect to the new project
     window.location.href = `project.html?id=${newProject.id}`;
 });
+
+// --- Progress Bar Tooltip ---
+(function initProgressTooltip() {
+    const container = document.getElementById('progressBarContainer');
+    const fill = document.getElementById('globalProgressBar');
+    const text = document.getElementById('globalProgressText');
+    const tooltip = document.getElementById('progressTooltip');
+
+    const showTooltip = (clientX, clientY, html) => {
+        tooltip.innerHTML = html;
+        tooltip.style.left = clientX + 'px';
+        tooltip.style.top = clientY + 'px';
+        tooltip.classList.add('visible');
+    };
+
+    const hideTooltip = () => tooltip.classList.remove('visible');
+
+    const filledHtml = () =>
+        `${formatMoney(currentPaidValue)} / ${formatMoney(currentTotalValue)}`;
+
+    const remainingHtml = () => {
+        const falta = Math.max(0, currentTotalValue - currentPaidValue);
+        return `Falta ${formatMoney(falta)} de ${formatMoney(currentTotalValue)}`;
+    };
+
+    container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        const relX = e.clientX - rect.left;
+        const fillWidth = rect.width * (parseFloat(fill.style.width) || 0) / 100;
+        const html = relX <= fillWidth ? filledHtml() : remainingHtml();
+        showTooltip(e.clientX, rect.top, html);
+    });
+
+    container.addEventListener('mouseleave', hideTooltip);
+
+    text.addEventListener('mousemove', (e) => {
+        const rect = text.getBoundingClientRect();
+        showTooltip(rect.left + rect.width / 2, rect.top, remainingHtml());
+    });
+
+    text.addEventListener('mouseleave', hideTooltip);
+})();
 
 // Initial Render
 updateGlobalProgress();
