@@ -84,21 +84,36 @@
         }
 
         function renderSidebar() {
+            const recentOrder = JSON.parse(localStorage.getItem('recentProjectsOrder')) || [];
+            
             const projectsWithStats = projects_data.map(p => ({ ...p, stats: getProjectStats(p.id) }));
-            projectsWithStats.sort((a, b) => a.stats.closestDeadline - b.stats.closestDeadline);
+            
+            // Sort by recent access (most recent first), projects not in recentOrder go to the end
+            projectsWithStats.sort((a, b) => {
+                const aIdx = recentOrder.indexOf(a.id);
+                const bIdx = recentOrder.indexOf(b.id);
+                if (aIdx === -1 && bIdx === -1) return 0;
+                if (aIdx === -1) return 1;
+                if (bIdx === -1) return -1;
+                return aIdx - bIdx;
+            });
+            
+            // Limit to 6
+            const limited = projectsWithStats.slice(0, 6);
             
             const sidebarList = document.getElementById('sidebarProjectList');
             sidebarList.innerHTML = '';
             
             const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
             
-            projectsWithStats.forEach((p, index) => {
+            limited.forEach((p, index) => {
                 const pItemsCount = items_data.filter(i => i.projectId === p.id).length;
                 const color = colors[index % colors.length];
+                const nameColor = p.stats.isExpired ? 'color: #ef4444;' : '';
                 
                 sidebarList.insertAdjacentHTML('beforeend', `
                     <li class="project-item" onclick="window.location.href='project.html?id=${p.id}'">
-                        <div style="display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">
+                        <div style="display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; ${nameColor}">
                             <div class="project-color" style="background-color: ${color}; flex-shrink: 0;"></div>
                             ${p.name}
                         </div>

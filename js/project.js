@@ -36,6 +36,17 @@ let searchQuery = '';
 
 document.getElementById('mainProjectTitle').innerText = currentProject.name;
 
+// Track recently opened projects
+(function trackRecentProject() {
+    let recentOrder = JSON.parse(localStorage.getItem('recentProjectsOrder')) || [];
+    // Move current project to the front
+    recentOrder = recentOrder.filter(id => id !== currentProjectId);
+    recentOrder.unshift(currentProjectId);
+    // Keep max 6
+    recentOrder = recentOrder.slice(0, 6);
+    localStorage.setItem('recentProjectsOrder', JSON.stringify(recentOrder));
+})();
+
 // Utilities
 const formatMoney = (val) => "R$ " + Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const formatDateBR = (dateString) => {
@@ -159,34 +170,51 @@ function updateGlobalProgress() {
 }
 
 function renderSidebar() {
+    const recentOrder = JSON.parse(localStorage.getItem('recentProjectsOrder')) || [];
+
     const projectsWithStats = projects_data.map(p => {
         const pItems = items_data.filter(i => i.projectId === p.id);
         let closestDeadline = Infinity;
         pItems.forEach(item => {
             const status = calculateStatus(parseFloat(item.valor), parseFloat(item.valorPago));
             if (status !== 'Pago') {
-                const dl = new Date(item.deadline).getTime();
+                const d = new Date(item.deadline);
+                d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+                const dl = d.getTime();
                 if (dl < closestDeadline) closestDeadline = dl;
             }
         });
-        return { ...p, closestDeadline };
+        const isExpired = closestDeadline !== Infinity && closestDeadline < new Date().setHours(0, 0, 0, 0);
+        return { ...p, closestDeadline, isExpired };
     });
 
-    projectsWithStats.sort((a, b) => a.closestDeadline - b.closestDeadline);
+    // Sort by recent access
+    projectsWithStats.sort((a, b) => {
+        const aIdx = recentOrder.indexOf(a.id);
+        const bIdx = recentOrder.indexOf(b.id);
+        if (aIdx === -1 && bIdx === -1) return 0;
+        if (aIdx === -1) return 1;
+        if (bIdx === -1) return -1;
+        return aIdx - bIdx;
+    });
+
+    // Limit to 6
+    const limited = projectsWithStats.slice(0, 6);
 
     const sidebarList = document.getElementById('sidebarProjectList');
     sidebarList.innerHTML = '';
 
     const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
-    projectsWithStats.forEach((p, index) => {
+    limited.forEach((p, index) => {
         const pItemsCount = items_data.filter(i => i.projectId === p.id).length;
         const color = colors[index % colors.length];
         const isActive = p.id === currentProjectId ? 'background-color: var(--bg-hover); color: var(--text-primary);' : '';
+        const nameColor = p.isExpired ? 'color: #ef4444;' : '';
 
         sidebarList.insertAdjacentHTML('beforeend', `
                     <li class="project-item" style="${isActive}" onclick="window.location.href='project.html?id=${p.id}'">
-                        <div style="display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">
+                        <div style="display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; ${nameColor}">
                             <div class="project-color" style="background-color: ${color}; flex-shrink: 0;"></div>
                             ${p.name}
                         </div>
