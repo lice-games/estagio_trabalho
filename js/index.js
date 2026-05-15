@@ -233,6 +233,8 @@
                     projects_data[pIndex].name = document.getElementById('p_name').value;
                     projects_data[pIndex].description = document.getElementById('p_desc').value;
                 }
+                saveProjects();
+                closeModal();
             } else {
                 // Create new
                 const newProject = {
@@ -241,10 +243,17 @@
                     description: document.getElementById('p_desc').value
                 };
                 projects_data.push(newProject);
-            }
+                saveProjects();
 
-            saveProjects();
-            closeModal();
+                // Register as most recent and redirect
+                let recentOrder = JSON.parse(localStorage.getItem('recentProjectsOrder')) || [];
+                recentOrder = recentOrder.filter(id => id !== newProject.id);
+                recentOrder.unshift(newProject.id);
+                recentOrder = recentOrder.slice(0, 6);
+                localStorage.setItem('recentProjectsOrder', JSON.stringify(recentOrder));
+
+                window.location.href = `project.html?id=${newProject.id}`;
+            }
         });
 
         function deleteProject(id) {

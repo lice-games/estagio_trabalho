@@ -142,13 +142,23 @@ function updateGlobalProgress() {
         ? '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>'
         : '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
 
+    const itemsListHtml = pItems.map(item => `
+        <div class="header-stat-dropdown-item" onclick="quickSearch('${item.name.replace(/'/g, "\\'")}')">
+            <span class="item-name">${item.name}</span>
+            <span class="item-value">${formatMoney(item.valor)}</span>
+        </div>
+    `).join('');
+
     document.getElementById('headerStatsPanel').innerHTML = `
         <div class="header-stat">
             <span class="header-stat-label">
                 <svg style="width:14px;height:14px;" fill="none" stroke="#60a5fa" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4l-8 8 8 8 8-8-8-8z"></path></svg>
                 Custo Total
             </span>
-            <span class="header-stat-value" style="color: #60a5fa;">${formatMoney(totalValue)}</span>
+            <span class="header-stat-value" style="color: #60a5fa; cursor: help;">${formatMoney(totalValue)}</span>
+            <div class="header-stat-dropdown">
+                ${itemsListHtml || '<div class="header-stat-dropdown-item">Sem itens</div>'}
+            </div>
         </div>
         <div class="header-stat-divider"></div>
         <div class="header-stat">
@@ -167,6 +177,15 @@ function updateGlobalProgress() {
             <span class="header-stat-value" style="color: ${deadlineColor}; ${isExpired ? 'font-weight:700;' : ''}">${deadlineDisplay}</span>
         </div>
     `;
+}
+
+function quickSearch(name) {
+    const searchInput = document.getElementById('searchInput');
+    searchInput.value = name;
+    searchQuery = name;
+    renderCards();
+    // Scroll to top to see results
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderSidebar() {
@@ -759,6 +778,42 @@ function selectHighlighted() {
         }
     });
 })();
+
+// --- New Project Modal (from sidebar +) ---
+const newProjectModal = document.getElementById('newProjectModal');
+const newProjectForm = document.getElementById('newProjectForm');
+
+function openNewProjectModal() {
+    newProjectModal.classList.add('active');
+}
+
+function closeNewProjectModal() {
+    newProjectModal.classList.remove('active');
+    newProjectForm.reset();
+}
+
+newProjectForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const newProject = {
+        id: Date.now(),
+        name: document.getElementById('np_name').value,
+        description: document.getElementById('np_desc').value
+    };
+
+    projects_data.push(newProject);
+    localStorage.setItem('projects_data', JSON.stringify(projects_data));
+
+    // Register as most recent
+    let recentOrder = JSON.parse(localStorage.getItem('recentProjectsOrder')) || [];
+    recentOrder = recentOrder.filter(id => id !== newProject.id);
+    recentOrder.unshift(newProject.id);
+    recentOrder = recentOrder.slice(0, 6);
+    localStorage.setItem('recentProjectsOrder', JSON.stringify(recentOrder));
+
+    // Redirect to the new project
+    window.location.href = `project.html?id=${newProject.id}`;
+});
 
 // Initial Render
 updateGlobalProgress();

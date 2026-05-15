@@ -524,6 +524,60 @@
             background-color: var(--border-color);
         }
 
+        /* Header Stat Dropdown */
+        .header-stat {
+            position: relative;
+        }
+
+        .header-stat-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px 0;
+            display: none;
+            flex-direction: column;
+            z-index: 120;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            min-width: 220px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+
+        .header-stat:hover .header-stat-dropdown {
+            display: flex;
+        }
+
+        .header-stat-dropdown-item {
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 13px;
+        }
+
+        .header-stat-dropdown-item:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .header-stat-dropdown-item .item-name {
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-stat-dropdown-item .item-value {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
         .btn-new-item {
             background-color: #ffffff;
             color: #000000;

@@ -35,7 +35,7 @@
 
         <div class="section-title">
             PROJETOS RECENTES
-            <svg style="width: 14px; height: 14px; cursor: pointer; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+            <svg onclick="openNewProjectModal()" style="width: 14px; height: 14px; cursor: pointer; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
         </div>
         
         <ul class="project-list" id="sidebarProjectList">
@@ -214,6 +214,27 @@
             <div class="modal-actions">
                 <button type="button" class="btn-primary" onclick="closeViewModal()">Fechar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal for New Project (from sidebar +) -->
+    <div class="modal-overlay" id="newProjectModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Novo Projeto</h2>
+            <form id="newProjectForm">
+                <div class="form-group">
+                    <label>Nome do Projeto</label>
+                    <input type="text" id="np_name" class="form-input" required placeholder="Ex: Construção Setor Sul">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="np_desc" class="form-input" rows="4" required placeholder="Detalhes do projeto..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeNewProjectModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Criar Projeto</button>
+                </div>
+            </form>
         </div>
     </div>
 
