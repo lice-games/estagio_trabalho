@@ -1,22 +1,76 @@
 // Data Migration / Initialization
+const MOCK_VERSION = '3';
 let projects_data = JSON.parse(localStorage.getItem('projects_data'));
 let items_data = JSON.parse(localStorage.getItem('items_data'));
+const storedVersion = localStorage.getItem('mock_version');
 
-if (!projects_data || projects_data.length === 0) {
+if (storedVersion !== MOCK_VERSION || !projects_data || projects_data.length === 0) {
     projects_data = [
-        { id: 1, name: "Projeto Maritmo", description: "Projeto de construção e arquitetura naval." }
+        { id: 1, name: "Residencial Vista Verde", description: "Condomínio residencial de alto padrão com 12 unidades, área de lazer completa e fachada premium." },
+        { id: 2, name: "Reforma Comercial Centro", description: "Reforma completa de loja em galeria, incluindo nova fachada, vitrines e iluminação." },
+        { id: 3, name: "Galpão Logístico Norte", description: "Construção de galpão industrial de 1500m² com estrutura metálica e cobertura trapezoidal." },
+        { id: 4, name: "Casa de Praia Maresias", description: "Construção de casa de veraneio com 4 suítes, piscina e área gourmet beira-mar." },
+        { id: 5, name: "Reforma Escolar Municipal", description: "Renovação de escola pública: salas, pintura, mobiliário e instalação elétrica." },
+        { id: 6, name: "Estaleiro Marítimo", description: "Manutenção naval e revisão de cascos para frota pesqueira regional." }
     ];
-    localStorage.setItem('projects_data', JSON.stringify(projects_data));
-}
 
-// Apply new schema to items
-if (!items_data || items_data.length === 0 || items_data[0].budget !== undefined) {
     items_data = [
-        { id: 1, projectId: 1, name: "Fundação", observacoes: "Compra de cimento e ferro para a primeira fase.", valor: 11500, valorPago: 5000, deadline: "2026-02-05", badge: "Material", paymentMethod: "Transferência" },
-        { id: 2, projectId: 1, name: "Caminhão Pipa", observacoes: "Aluguel de caminhão pipa para obra", valor: 2000, valorPago: 0, deadline: "2026-02-10", badge: "Transporte", paymentMethod: "Boleto" },
-        { id: 3, projectId: 1, name: "Pedreiros", observacoes: "Pagamento equipe base", valor: 8000, valorPago: 8000, deadline: "2026-02-01", badge: "Mão de Obra", paymentMethod: "PIX" }
+        // Projeto 1 — Residencial Vista Verde
+        { id: 101, projectId: 1, name: "Cimento Portland CP-II", observacoes: "200 sacos para fundação dos blocos A e B.", valor: 8400, valorPago: 4200, deadline: "2026-05-25", badge: "Material", paymentMethod: "Boleto" },
+        { id: 102, projectId: 1, name: "Mão de Obra - Pedreiros", observacoes: "Pagamento mensal equipe base (8 pedreiros).", valor: 32000, valorPago: 32000, deadline: "2026-05-10", badge: "Mão de Obra", paymentMethod: "PIX" },
+        { id: 103, projectId: 1, name: "Aço CA-50 12mm", observacoes: "Vergalhões para estrutura de pilares.", valor: 18500, valorPago: 0, deadline: "2026-05-20", badge: "Material", paymentMethod: "Transferência" },
+        { id: 104, projectId: 1, name: "Aluguel Betoneira", observacoes: "Locação mensal da betoneira de 400L.", valor: 1200, valorPago: 1200, deadline: "2026-05-05", badge: "Equipamento", paymentMethod: "Boleto" },
+        { id: 105, projectId: 1, name: "Tijolos Cerâmicos", observacoes: "12 milheiros de tijolo baiano furado.", valor: 9600, valorPago: 4800, deadline: "2026-06-05", badge: "Material", paymentMethod: "Boleto" },
+        { id: 106, projectId: 1, name: "Frete Areia e Brita", observacoes: "Caminhões basculantes para a obra.", valor: 2800, valorPago: 2800, deadline: "2026-04-28", badge: "Transporte", paymentMethod: "Dinheiro" },
+        { id: 107, projectId: 1, name: "Marmitas da Equipe", observacoes: "60 marmitas/dia entregues no canteiro.", valor: 4500, valorPago: 2000, deadline: "2026-05-15", badge: "Alimentação", paymentMethod: "PIX" },
+        { id: 108, projectId: 1, name: "Eletricista Especializado", observacoes: "Instalação predial completa fase 1.", valor: 14000, valorPago: 0, deadline: "2026-04-30", badge: "Mão de Obra", paymentMethod: "PIX" },
+        { id: 109, projectId: 1, name: "Tinta Acrílica Premium", observacoes: "20 latas para a fachada externa.", valor: 5200, valorPago: 5200, deadline: "2026-04-15", badge: "Material", paymentMethod: "Cartão" },
+        { id: 110, projectId: 1, name: "Escavadeira Hidráulica", observacoes: "Locação por 5 dias para terraplanagem.", valor: 7800, valorPago: 7800, deadline: "2026-03-22", badge: "Equipamento", paymentMethod: "Boleto" },
+
+        // Projeto 2 — Reforma Comercial Centro
+        { id: 201, projectId: 2, name: "Vidro Temperado Fachada", observacoes: "Vidros 10mm com película de segurança.", valor: 12500, valorPago: 6000, deadline: "2026-05-30", badge: "Material", paymentMethod: "Transferência" },
+        { id: 202, projectId: 2, name: "Vidraceiro - Mão de Obra", observacoes: "Instalação dos vidros da fachada.", valor: 4200, valorPago: 0, deadline: "2026-06-02", badge: "Mão de Obra", paymentMethod: "PIX" },
+        { id: 203, projectId: 2, name: "Letreiro Luminoso LED", observacoes: "Letreiro personalizado da marca.", valor: 6800, valorPago: 6800, deadline: "2026-04-20", badge: "Material", paymentMethod: "Cartão" },
+        { id: 204, projectId: 2, name: "Piso Porcelanato 80x80", observacoes: "Atraso na entrega do fornecedor.", valor: 9400, valorPago: 4500, deadline: "2026-04-25", badge: "Material", paymentMethod: "Boleto" },
+        { id: 205, projectId: 2, name: "Almoço Equipe Reforma", observacoes: "Refeições durante semana de obra.", valor: 1100, valorPago: 1100, deadline: "2026-05-08", badge: "Alimentação", paymentMethod: "Dinheiro" },
+        { id: 206, projectId: 2, name: "Furadeira Industrial", observacoes: "Compra de furadeira de impacto SDS Max.", valor: 2300, valorPago: 2300, deadline: "2026-04-10", badge: "Equipamento", paymentMethod: "Cartão" },
+
+        // Projeto 3 — Galpão Logístico Norte
+        { id: 301, projectId: 3, name: "Estrutura Metálica", observacoes: "Pilares e treliças de aço pré-fabricadas.", valor: 145000, valorPago: 72500, deadline: "2026-06-20", badge: "Material", paymentMethod: "Transferência" },
+        { id: 302, projectId: 3, name: "Telhas Trapezoidais", observacoes: "Cobertura completa do galpão (1500m²).", valor: 38000, valorPago: 0, deadline: "2026-05-18", badge: "Material", paymentMethod: "Boleto" },
+        { id: 303, projectId: 3, name: "Concreto Usinado - Piso", observacoes: "Caminhões de concreto para piso industrial.", valor: 22000, valorPago: 22000, deadline: "2026-04-08", badge: "Material", paymentMethod: "Transferência" },
+        { id: 304, projectId: 3, name: "Operadores Empilhadeira", observacoes: "Equipe operacional para montagem.", valor: 9800, valorPago: 9800, deadline: "2026-05-01", badge: "Mão de Obra", paymentMethod: "PIX" },
+        { id: 305, projectId: 3, name: "Caminhão Munck", observacoes: "Locação para içamento das treliças.", valor: 5400, valorPago: 0, deadline: "2026-05-22", badge: "Transporte", paymentMethod: "Boleto" },
+        { id: 306, projectId: 3, name: "Soldador Especializado", observacoes: "Pagamento atrasado - aguardando NF.", valor: 11200, valorPago: 5600, deadline: "2026-05-02", badge: "Mão de Obra", paymentMethod: "PIX" },
+        { id: 307, projectId: 3, name: "Marmitas Operários", observacoes: "Refeições para 25 operários por 20 dias.", valor: 6800, valorPago: 6800, deadline: "2026-04-30", badge: "Alimentação", paymentMethod: "PIX" },
+
+        // Projeto 4 — Casa de Praia Maresias
+        { id: 401, projectId: 4, name: "Cimento e Areia", observacoes: "Material inicial para alicerces.", valor: 6400, valorPago: 3200, deadline: "2026-05-28", badge: "Material", paymentMethod: "PIX" },
+        { id: 402, projectId: 4, name: "Pedreiro Chefe", observacoes: "Mestre de obras 1 mês.", valor: 8500, valorPago: 8500, deadline: "2026-05-12", badge: "Mão de Obra", paymentMethod: "PIX" },
+        { id: 403, projectId: 4, name: "Janelas Anti-Corrosão", observacoes: "10 janelas alumínio náutico.", valor: 14500, valorPago: 0, deadline: "2026-07-15", badge: "Material", paymentMethod: "Boleto" },
+        { id: 404, projectId: 4, name: "Frete Litoral Norte", observacoes: "Transporte de materiais até Maresias.", valor: 3200, valorPago: 3200, deadline: "2026-04-18", badge: "Transporte", paymentMethod: "Boleto" },
+        { id: 405, projectId: 4, name: "Telhas Coloniais", observacoes: "Telhado completo - 380m².", valor: 11200, valorPago: 5600, deadline: "2026-06-10", badge: "Material", paymentMethod: "Cartão" },
+        { id: 406, projectId: 4, name: "Almoço Operários", observacoes: "Marmitex equipe de campo.", valor: 1800, valorPago: 1800, deadline: "2026-05-09", badge: "Alimentação", paymentMethod: "Dinheiro" },
+
+        // Projeto 5 — Reforma Escolar Municipal
+        { id: 501, projectId: 5, name: "Tinta Lousa Verde", observacoes: "Pintura das salas de aula.", valor: 2400, valorPago: 2400, deadline: "2026-04-22", badge: "Material", paymentMethod: "Transferência" },
+        { id: 502, projectId: 5, name: "Carteiras Escolares Novas", observacoes: "120 carteiras + 6 mesas de professor.", valor: 28000, valorPago: 14000, deadline: "2026-06-30", badge: "Material", paymentMethod: "Boleto" },
+        { id: 503, projectId: 5, name: "Mão de Obra Pintores", observacoes: "Equipe de 4 pintores - 2 semanas.", valor: 9600, valorPago: 9600, deadline: "2026-05-06", badge: "Mão de Obra", paymentMethod: "PIX" },
+        { id: 504, projectId: 5, name: "Material Elétrico", observacoes: "Atraso na liberação do empenho.", valor: 7800, valorPago: 0, deadline: "2026-04-15", badge: "Material", paymentMethod: "Cartão" },
+        { id: 505, projectId: 5, name: "Frete Carteiras", observacoes: "Entrega do fornecedor de SP.", valor: 1900, valorPago: 1900, deadline: "2026-05-04", badge: "Transporte", paymentMethod: "Boleto" },
+        { id: 506, projectId: 5, name: "Andaimes Tubulares", observacoes: "Locação para pintura das fachadas.", valor: 3600, valorPago: 1800, deadline: "2026-05-30", badge: "Equipamento", paymentMethod: "Boleto" },
+
+        // Projeto 6 — Estaleiro Marítimo
+        { id: 601, projectId: 6, name: "Lixadeira de Casco", observacoes: "Equipamento para preparo dos cascos.", valor: 3400, valorPago: 3400, deadline: "2026-03-15", badge: "Equipamento", paymentMethod: "Cartão" },
+        { id: 602, projectId: 6, name: "Tinta Naval Anti-Incrustante", observacoes: "Pintura completa de 3 cascos.", valor: 8900, valorPago: 4450, deadline: "2026-05-26", badge: "Material", paymentMethod: "Transferência" },
+        { id: 603, projectId: 6, name: "Mão de Obra Soldagem", observacoes: "Soldador certificado para reparos.", valor: 6200, valorPago: 0, deadline: "2026-05-19", badge: "Mão de Obra", paymentMethod: "PIX" },
+        { id: 604, projectId: 6, name: "Almoço Equipe Naval", observacoes: "Refeições mensais da equipe.", valor: 2100, valorPago: 2100, deadline: "2026-04-26", badge: "Alimentação", paymentMethod: "PIX" }
     ];
+
+    localStorage.setItem('projects_data', JSON.stringify(projects_data));
     localStorage.setItem('items_data', JSON.stringify(items_data));
+    localStorage.setItem('mock_version', MOCK_VERSION);
+    localStorage.removeItem('recentProjectsOrder');
 }
 
 // Routing
@@ -52,7 +106,7 @@ document.getElementById('mainProjectTitle').innerText = currentProject.name;
 })();
 
 // Utilities
-const formatMoney = (val) => "R$ " + Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatMoney = (val) => window.Currency.formatMoney(val);
 const formatDateBR = (dateString) => {
     if (!dateString) return "N/A";
     const parts = dateString.split('-');
@@ -498,10 +552,17 @@ function closeViewModal() {
 const modal = document.getElementById('newItemModal');
 const form = document.getElementById('itemForm');
 
+function updateFormCurrencyLabels() {
+    const prefix = window.Currency.getPrefix(window.Currency.getCurrency().code);
+    document.getElementById('p_valor_label').innerText = `Custo Total (${prefix})`;
+    document.getElementById('p_valorPago_label').innerText = `Valor já Pago (${prefix})`;
+}
+
 function openModal() {
     document.getElementById('formModalTitle').innerText = "Adicionar Item";
     document.getElementById('p_id').value = "";
     document.getElementById('p_deadline').valueAsDate = new Date();
+    updateFormCurrencyLabels();
     modal.classList.add('active');
 }
 
@@ -511,12 +572,13 @@ function editItem(id) {
         document.getElementById('formModalTitle').innerText = "Editar Item";
         document.getElementById('p_id').value = item.id;
         document.getElementById('p_name').value = item.name;
-        document.getElementById('p_valor').value = item.valor;
-        document.getElementById('p_valorPago').value = item.valorPago;
+        document.getElementById('p_valor').value = window.Currency.fromBRL(item.valor).toFixed(2);
+        document.getElementById('p_valorPago').value = window.Currency.fromBRL(item.valorPago).toFixed(2);
         document.getElementById('p_deadline').value = item.deadline;
         document.getElementById('p_paymentMethod').value = item.paymentMethod || 'Dinheiro';
         document.getElementById('p_badge').value = item.badge;
         document.getElementById('p_observacoes').value = item.observacoes || '';
+        updateFormCurrencyLabels();
         modal.classList.add('active');
     }
 }
@@ -530,11 +592,15 @@ form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const pId = document.getElementById('p_id').value;
-    let val = parseFloat(document.getElementById('p_valor').value) || 0;
-    let pago = parseFloat(document.getElementById('p_valorPago').value) || 0;
+    let valDisplay = parseFloat(document.getElementById('p_valor').value) || 0;
+    let pagoDisplay = parseFloat(document.getElementById('p_valorPago').value) || 0;
 
-    // Cap pago at valor
-    if (pago > val) pago = val;
+    // Cap pago at valor (in display currency, before converting)
+    if (pagoDisplay > valDisplay) pagoDisplay = valDisplay;
+
+    // Convert from display currency to BRL for storage
+    const val = window.Currency.toBRL(valDisplay);
+    const pago = window.Currency.toBRL(pagoDisplay);
 
     const newItemData = {
         projectId: currentProjectId,
@@ -856,7 +922,7 @@ newProjectForm.addEventListener('submit', (e) => {
 
     container.addEventListener('mouseleave', hideTooltip);
 
-    text.addEventListener('mousemove', (e) => {
+    text.addEventListener('mouseenter', () => {
         const rect = text.getBoundingClientRect();
         showTooltip(rect.left + rect.width / 2, rect.top, remainingHtml());
     });
