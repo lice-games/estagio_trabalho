@@ -98,15 +98,64 @@ function updateGlobalProgress() {
     const pItems = items_data.filter(i => i.projectId === currentProjectId);
     let totalValue = 0;
     let paidValue = 0;
+    let closestDeadline = Infinity;
+    let closestDeadlineStr = '';
 
     pItems.forEach(item => {
-        totalValue += parseFloat(item.valor) || 0;
-        paidValue += parseFloat(item.valorPago) || 0;
+        const val = parseFloat(item.valor) || 0;
+        const paid = parseFloat(item.valorPago) || 0;
+        totalValue += val;
+        paidValue += paid;
+
+        if (paid < val) {
+            const d = new Date(item.deadline);
+            d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+            const t = d.getTime();
+            if (t < closestDeadline) {
+                closestDeadline = t;
+                closestDeadlineStr = item.deadline;
+            }
+        }
     });
 
     const progress = totalValue === 0 ? 0 : Math.round((paidValue / totalValue) * 100);
     document.getElementById('globalProgressBar').style.width = progress + '%';
     document.getElementById('globalProgressText').innerText = progress + '%';
+
+    // Header stats panel
+    const isExpired = closestDeadline !== Infinity && closestDeadline < new Date().setHours(0, 0, 0, 0);
+    const deadlineDisplay = closestDeadline === Infinity ? 'N/A' : formatDateBR(closestDeadlineStr);
+    const deadlineLabel = isExpired ? 'Vencido' : 'Próximo Vencimento';
+    const deadlineColor = isExpired ? '#ef4444' : 'var(--text-primary)';
+    const deadlineIcon = isExpired
+        ? '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>'
+        : '<svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+
+    document.getElementById('headerStatsPanel').innerHTML = `
+        <div class="header-stat">
+            <span class="header-stat-label">
+                <svg style="width:14px;height:14px;" fill="none" stroke="#60a5fa" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4l-8 8 8 8 8-8-8-8z"></path></svg>
+                Custo Total
+            </span>
+            <span class="header-stat-value" style="color: #60a5fa;">${formatMoney(totalValue)}</span>
+        </div>
+        <div class="header-stat-divider"></div>
+        <div class="header-stat">
+            <span class="header-stat-label">
+                <svg style="width:14px;height:14px;" fill="none" stroke="#22c55e" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Arrecadado
+            </span>
+            <span class="header-stat-value" style="color: #22c55e;">${formatMoney(paidValue)}</span>
+        </div>
+        <div class="header-stat-divider"></div>
+        <div class="header-stat">
+            <span class="header-stat-label" style="color: ${isExpired ? '#ef4444' : 'var(--text-muted)'};">
+                ${deadlineIcon}
+                ${deadlineLabel}
+            </span>
+            <span class="header-stat-value" style="color: ${deadlineColor}; ${isExpired ? 'font-weight:700;' : ''}">${deadlineDisplay}</span>
+        </div>
+    `;
 }
 
 function renderSidebar() {
@@ -162,25 +211,43 @@ function isItemOverdue(item) {
 }
 
 function getFilteredItems() {
+    // Group filters by type: OR within same type, AND between types
+    const filtersByType = {};
+    activeFilters.forEach(f => {
+        if (!filtersByType[f.type]) filtersByType[f.type] = [];
+        filtersByType[f.type].push(f.value);
+    });
+
     return currentItems.filter(item => {
         // Text search
         if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase())) {
             return false;
         }
-        // Apply each active filter
-        for (const f of activeFilters) {
-            if (f.type === 'badge' && item.badge !== f.value) return false;
-            if (f.type === 'paymentMethod' && item.paymentMethod !== f.value) return false;
-            if (f.type === 'status') {
-                const s = calculateStatus(parseFloat(item.valor) || 0, parseFloat(item.valorPago) || 0);
-                if (s !== f.value) return false;
+
+        // For each filter type, item must match at least ONE value (OR)
+        // Across types, ALL must pass (AND)
+        for (const type in filtersByType) {
+            const values = filtersByType[type];
+
+            if (type === 'badge') {
+                if (!values.includes(item.badge)) return false;
             }
-            if (f.type === 'atrasado') {
+            if (type === 'paymentMethod') {
+                if (!values.includes(item.paymentMethod)) return false;
+            }
+            if (type === 'status') {
+                const s = calculateStatus(parseFloat(item.valor) || 0, parseFloat(item.valorPago) || 0);
+                if (!values.includes(s)) return false;
+            }
+            if (type === 'atrasado') {
                 const overdue = isItemOverdue(item);
-                if (f.value === 'true' && !overdue) return false;
-                if (f.value === 'false' && overdue) return false;
+                const matches = values.some(v =>
+                    (v === 'true' && overdue) || (v === 'false' && !overdue)
+                );
+                if (!matches) return false;
             }
         }
+
         return true;
     });
 }
@@ -530,7 +597,7 @@ function renderAutocomplete(query) {
                 input.value = '';
                 searchQuery = '';
                 renderCards();
-                hideAutocomplete();
+                renderAutocomplete(''); // Re-render with remaining suggestions
             });
             dropdown.appendChild(item);
         });
@@ -573,7 +640,7 @@ function selectHighlighted() {
         input.value = '';
         searchQuery = '';
         renderCards();
-        hideAutocomplete();
+        renderAutocomplete(''); // Re-render with remaining suggestions
         return true;
     }
     return false;
