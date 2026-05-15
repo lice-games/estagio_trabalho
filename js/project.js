@@ -30,6 +30,10 @@ if (!currentProjectId || !projects_data.find(p => p.id === currentProjectId)) {
 const currentProject = projects_data.find(p => p.id === currentProjectId);
 let currentItems = items_data.filter(i => i.projectId === currentProjectId);
 
+// Filter state
+let activeFilters = [];
+let searchQuery = '';
+
 document.getElementById('mainProjectTitle').innerText = currentProject.name;
 
 // Utilities
@@ -146,16 +150,106 @@ function renderSidebar() {
     });
 }
 
+// --- Filter Functions ---
+function isItemOverdue(item) {
+    const valor = parseFloat(item.valor) || 0;
+    const valorPago = parseFloat(item.valorPago) || 0;
+    const status = calculateStatus(valor, valorPago);
+    if (status === 'Pago') return false;
+    const d = new Date(item.deadline);
+    d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+    return d.getTime() < new Date().setHours(0, 0, 0, 0);
+}
+
+function getFilteredItems() {
+    return currentItems.filter(item => {
+        // Text search
+        if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+            return false;
+        }
+        // Apply each active filter
+        for (const f of activeFilters) {
+            if (f.type === 'badge' && item.badge !== f.value) return false;
+            if (f.type === 'paymentMethod' && item.paymentMethod !== f.value) return false;
+            if (f.type === 'status') {
+                const s = calculateStatus(parseFloat(item.valor) || 0, parseFloat(item.valorPago) || 0);
+                if (s !== f.value) return false;
+            }
+            if (f.type === 'atrasado') {
+                const overdue = isItemOverdue(item);
+                if (f.value === 'true' && !overdue) return false;
+                if (f.value === 'false' && overdue) return false;
+            }
+        }
+        return true;
+    });
+}
+
+function addFilter(type, value) {
+    const exists = activeFilters.some(f => f.type === type && f.value === value);
+    if (exists) {
+        removeFilter(type, value);
+        return;
+    }
+    activeFilters.push({ type, value });
+    renderFilterChips();
+    updateDropdownState();
+    renderCards();
+}
+
+function removeFilter(type, value) {
+    activeFilters = activeFilters.filter(f => !(f.type === type && f.value === value));
+    renderFilterChips();
+    updateDropdownState();
+    renderCards();
+}
+
+function renderFilterChips() {
+    const area = document.getElementById('searchChipsArea');
+    const input = document.getElementById('searchInput');
+    // Remove existing chips
+    area.querySelectorAll('.filter-chip').forEach(c => c.remove());
+    // Create chips
+    activeFilters.forEach(f => {
+        const chip = document.createElement('span');
+        chip.className = 'filter-chip';
+        chip.setAttribute('data-type', f.type);
+        const label = f.type === 'atrasado' ? (f.value === 'true' ? 'Atrasado' : 'Em dia') : f.value;
+        chip.innerHTML = `${label} <svg class="chip-x" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+        chip.addEventListener('click', () => removeFilter(f.type, f.value));
+        area.insertBefore(chip, input);
+    });
+    // Update placeholder
+    input.placeholder = activeFilters.length > 0 ? 'Pesquisar...' : 'Pesquisar itens...';
+}
+
+function updateDropdownState() {
+    document.querySelectorAll('.filter-option').forEach(btn => {
+        const type = btn.getAttribute('data-type');
+        const value = btn.getAttribute('data-value');
+        const isActive = activeFilters.some(f => f.type === type && f.value === value);
+        btn.classList.toggle('selected', isActive);
+    });
+    // Toggle funnel icon color
+    const btn = document.getElementById('filterToggleBtn');
+    btn.classList.toggle('active', activeFilters.length > 0);
+}
+
 function renderCards() {
     const container = document.getElementById('cardsContainer');
     container.innerHTML = '';
 
-    if (currentItems.length === 0) {
-        container.innerHTML = `<div class="empty-state">Nenhum item encontrado neste projeto.</div>`;
+    const filteredItems = getFilteredItems();
+
+    if (filteredItems.length === 0) {
+        const msg = currentItems.length === 0
+            ? 'Nenhum item encontrado neste projeto.'
+            : 'Nenhum item encontrado com os filtros aplicados.';
+        container.innerHTML = `<div class="empty-state">${msg}</div>`;
         return;
     }
 
-    const sortedItems = [...currentItems].sort((a, b) => {
+    const sortedItems = [...filteredItems].sort((a, b) => {
         const aValor = parseFloat(a.valor) || 0;
         const aPago = parseFloat(a.valorPago) || 0;
         // It's considered paid if it's explicitly paid according to the calculateStatus logic
@@ -357,8 +451,221 @@ function deleteItem(id) {
     }
 }
 
+// --- Autocomplete Suggestions Data ---
+const allSuggestions = [
+    // Categoria
+    { type: 'badge', value: 'Material', label: 'Categoria' },
+    { type: 'badge', value: 'Transporte', label: 'Categoria' },
+    { type: 'badge', value: 'Mão de Obra', label: 'Categoria' },
+    { type: 'badge', value: 'Alimentação', label: 'Categoria' },
+    { type: 'badge', value: 'Equipamento', label: 'Categoria' },
+    // Status
+    { type: 'status', value: 'Pendente', label: 'Status' },
+    { type: 'status', value: 'Parcial', label: 'Status' },
+    { type: 'status', value: 'Pago', label: 'Status' },
+    // Pagamento
+    { type: 'paymentMethod', value: 'PIX', label: 'Pagamento' },
+    { type: 'paymentMethod', value: 'Dinheiro', label: 'Pagamento' },
+    { type: 'paymentMethod', value: 'Cartão', label: 'Pagamento' },
+    { type: 'paymentMethod', value: 'Boleto', label: 'Pagamento' },
+    { type: 'paymentMethod', value: 'Transferência', label: 'Pagamento' },
+    // Prazo
+    { type: 'atrasado', value: 'true', label: 'Prazo', displayValue: 'Atrasado' },
+    { type: 'atrasado', value: 'false', label: 'Prazo', displayValue: 'Em dia' },
+];
+
+let highlightedIndex = -1;
+
+function getMatchingSuggestions(query) {
+    const q = query.toLowerCase().trim();
+    // Filter out suggestions already active
+    const available = allSuggestions.filter(s =>
+        !activeFilters.some(f => f.type === s.type && f.value === s.value)
+    );
+    if (!q) return available;
+    return available.filter(s => {
+        const display = s.displayValue || s.value;
+        return display.toLowerCase().includes(q) || s.label.toLowerCase().includes(q);
+    });
+}
+
+function renderAutocomplete(query) {
+    const dropdown = document.getElementById('autocompleteDropdown');
+    dropdown.innerHTML = '';
+    highlightedIndex = -1;
+
+    const matches = getMatchingSuggestions(query);
+    if (matches.length === 0) {
+        dropdown.classList.remove('active');
+        return;
+    }
+
+    // Group by label
+    const groups = {};
+    matches.forEach(s => {
+        if (!groups[s.label]) groups[s.label] = [];
+        groups[s.label].push(s);
+    });
+
+    Object.keys(groups).forEach(label => {
+        const catLabel = document.createElement('div');
+        catLabel.className = 'autocomplete-category-label';
+        catLabel.textContent = label;
+        dropdown.appendChild(catLabel);
+
+        groups[label].forEach(s => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.setAttribute('data-type', s.type);
+            item.setAttribute('data-value', s.value);
+            const display = s.displayValue || s.value;
+            item.innerHTML = `
+                <span class="ac-chip-preview" data-type="${s.type}">${display}</span>
+                <span class="ac-label">${s.label}</span>
+            `;
+            item.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Prevent input blur
+                addFilter(s.type, s.value);
+                const input = document.getElementById('searchInput');
+                input.value = '';
+                searchQuery = '';
+                renderCards();
+                hideAutocomplete();
+            });
+            dropdown.appendChild(item);
+        });
+    });
+
+    dropdown.classList.add('active');
+}
+
+function hideAutocomplete() {
+    const dropdown = document.getElementById('autocompleteDropdown');
+    dropdown.classList.remove('active');
+    highlightedIndex = -1;
+}
+
+function navigateAutocomplete(direction) {
+    const dropdown = document.getElementById('autocompleteDropdown');
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    if (items.length === 0) return;
+
+    // Remove current highlight
+    items.forEach(i => i.classList.remove('highlighted'));
+
+    highlightedIndex += direction;
+    if (highlightedIndex < 0) highlightedIndex = items.length - 1;
+    if (highlightedIndex >= items.length) highlightedIndex = 0;
+
+    items[highlightedIndex].classList.add('highlighted');
+    items[highlightedIndex].scrollIntoView({ block: 'nearest' });
+}
+
+function selectHighlighted() {
+    const dropdown = document.getElementById('autocompleteDropdown');
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    if (highlightedIndex >= 0 && highlightedIndex < items.length) {
+        const item = items[highlightedIndex];
+        const type = item.getAttribute('data-type');
+        const value = item.getAttribute('data-value');
+        addFilter(type, value);
+        const input = document.getElementById('searchInput');
+        input.value = '';
+        searchQuery = '';
+        renderCards();
+        hideAutocomplete();
+        return true;
+    }
+    return false;
+}
+
+// --- Search & Filter Event Listeners ---
+(function initSearchFilters() {
+    const searchInput = document.getElementById('searchInput');
+    const filterToggleBtn = document.getElementById('filterToggleBtn');
+    const filterDropdown = document.getElementById('filterDropdown');
+
+    // Text search + autocomplete
+    searchInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        searchQuery = val.trim();
+        renderAutocomplete(val);
+        renderCards();
+    });
+
+    // Show autocomplete on focus
+    searchInput.addEventListener('focus', () => {
+        renderAutocomplete(searchInput.value);
+    });
+
+    // Hide autocomplete on blur (with delay for click)
+    searchInput.addEventListener('blur', () => {
+        setTimeout(() => hideAutocomplete(), 150);
+    });
+
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', (e) => {
+        const dropdown = document.getElementById('autocompleteDropdown');
+        if (!dropdown.classList.contains('active')) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateAutocomplete(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateAutocomplete(-1);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (!selectHighlighted()) {
+                // If nothing was highlighted, check if input matches exactly one suggestion
+                const matches = getMatchingSuggestions(searchInput.value);
+                if (matches.length === 1) {
+                    addFilter(matches[0].type, matches[0].value);
+                    searchInput.value = '';
+                    searchQuery = '';
+                    renderCards();
+                    hideAutocomplete();
+                }
+            }
+        } else if (e.key === 'Escape') {
+            hideAutocomplete();
+        }
+    });
+
+    // Backspace on empty input removes last chip
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && searchInput.value === '' && activeFilters.length > 0) {
+            const last = activeFilters[activeFilters.length - 1];
+            removeFilter(last.type, last.value);
+        }
+    });
+
+    // Toggle filter dropdown
+    filterToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        filterDropdown.classList.toggle('active');
+        hideAutocomplete();
+    });
+
+    // Filter option clicks (delegated)
+    filterDropdown.addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-option');
+        if (!btn) return;
+        const type = btn.getAttribute('data-type');
+        const value = btn.getAttribute('data-value');
+        addFilter(type, value);
+    });
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-filter-wrapper')) {
+            filterDropdown.classList.remove('active');
+            hideAutocomplete();
+        }
+    });
+})();
+
 // Initial Render
 updateGlobalProgress();
 renderSidebar();
 renderCards();
-

@@ -198,6 +198,296 @@
             gap: 16px;
         }
 
+        /* Compound Search + Filters */
+        .search-filter-wrapper {
+            position: relative;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-compound {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 4px 8px 4px 36px;
+            position: relative;
+            transition: border-color 0.2s;
+            min-height: 40px;
+        }
+
+        .search-compound:focus-within {
+            border-color: #6366f1;
+        }
+
+        .search-icon-compound {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .search-chips-area {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-input-inline {
+            flex: 1;
+            min-width: 100px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            padding: 6px 4px;
+            font-family: var(--font-family);
+        }
+
+        .search-input-inline::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Filter Chips */
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            animation: chipIn 0.2s ease;
+            transition: opacity 0.15s, transform 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .filter-chip:hover {
+            opacity: 0.8;
+            transform: scale(0.96);
+        }
+
+        .filter-chip .chip-x {
+            width: 12px;
+            height: 12px;
+            opacity: 0.7;
+            transition: opacity 0.15s;
+        }
+
+        .filter-chip:hover .chip-x {
+            opacity: 1;
+        }
+
+        /* Chip color variants */
+        .filter-chip[data-type="badge"] {
+            background: linear-gradient(90deg, rgba(249,115,22,0.25), rgba(234,179,8,0.25));
+            color: #fbbf24;
+        }
+        .filter-chip[data-type="status"] {
+            background: rgba(96,165,250,0.15);
+            color: #60a5fa;
+            border-color: rgba(96,165,250,0.3);
+        }
+        .filter-chip[data-type="paymentMethod"] {
+            background: rgba(139,92,246,0.15);
+            color: #a78bfa;
+            border-color: rgba(139,92,246,0.3);
+        }
+        .filter-chip[data-type="atrasado"] {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+            border-color: rgba(239,68,68,0.3);
+        }
+
+        @keyframes chipIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Filter Toggle Button */
+        .filter-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .filter-toggle-btn:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-hover);
+        }
+
+        .filter-toggle-btn.active {
+            color: #6366f1;
+        }
+
+        /* Filter Dropdown */
+        .filter-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: none;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            animation: dropdownIn 0.2s ease;
+        }
+
+        .filter-dropdown.active {
+            display: grid;
+        }
+
+        @keyframes dropdownIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .filter-column {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-column-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .filter-option {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+            font-family: var(--font-family);
+        }
+
+        .filter-option:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .filter-option.selected {
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        /* Autocomplete Dropdown */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px 0;
+            display: none;
+            flex-direction: column;
+            z-index: 110;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            max-height: 280px;
+            overflow-y: auto;
+            animation: dropdownIn 0.15s ease;
+        }
+
+        .autocomplete-dropdown.active {
+            display: flex;
+        }
+
+        .autocomplete-category-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            padding: 8px 14px 4px;
+            font-weight: 600;
+        }
+
+        .autocomplete-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: background-color 0.1s, color 0.1s;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.highlighted {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .autocomplete-item .ac-chip-preview {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .autocomplete-item .ac-chip-preview[data-type="badge"] {
+            background: linear-gradient(90deg, rgba(249,115,22,0.25), rgba(234,179,8,0.25));
+            color: #fbbf24;
+        }
+        .autocomplete-item .ac-chip-preview[data-type="status"] {
+            background: rgba(96,165,250,0.15);
+            color: #60a5fa;
+        }
+        .autocomplete-item .ac-chip-preview[data-type="paymentMethod"] {
+            background: rgba(139,92,246,0.15);
+            color: #a78bfa;
+        }
+        .autocomplete-item .ac-chip-preview[data-type="atrasado"] {
+            background: rgba(239,68,68,0.15);
+            color: #f87171;
+        }
+
+        .autocomplete-item .ac-label {
+            color: var(--text-muted);
+            font-size: 11px;
+            margin-left: auto;
+        }
+
         .btn-new-item {
             background-color: #ffffff;
             color: #000000;

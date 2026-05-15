@@ -66,9 +66,53 @@
                 </a>
             </div>
 
-            <div class="search-container" style="margin-left: 20px;">
-                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" class="search-input" placeholder="Search anything here...">
+            <div class="search-filter-wrapper" style="margin-left: 20px;">
+                <div class="search-compound">
+                    <svg class="search-icon-compound" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <div class="search-chips-area" id="searchChipsArea">
+                        <!-- Chips rendered by JS -->
+                        <input type="text" class="search-input-inline" id="searchInput" placeholder="Pesquisar itens...">
+                    </div>
+                    <button class="filter-toggle-btn" id="filterToggleBtn" type="button" title="Filtros">
+                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Autocomplete Suggestions -->
+                <div class="autocomplete-dropdown" id="autocompleteDropdown">
+                    <!-- Suggestions rendered by JS -->
+                </div>
+
+                <!-- Filter Dropdown -->
+                <div class="filter-dropdown" id="filterDropdown">
+                    <div class="filter-column">
+                        <span class="filter-column-title">Categoria</span>
+                        <button class="filter-option" data-type="badge" data-value="Material" type="button">Material</button>
+                        <button class="filter-option" data-type="badge" data-value="Transporte" type="button">Transporte</button>
+                        <button class="filter-option" data-type="badge" data-value="Mão de Obra" type="button">Mão de Obra</button>
+                        <button class="filter-option" data-type="badge" data-value="Alimentação" type="button">Alimentação</button>
+                        <button class="filter-option" data-type="badge" data-value="Equipamento" type="button">Equipamento</button>
+                    </div>
+                    <div class="filter-column">
+                        <span class="filter-column-title">Pagamento</span>
+                        <button class="filter-option" data-type="paymentMethod" data-value="PIX" type="button">PIX</button>
+                        <button class="filter-option" data-type="paymentMethod" data-value="Dinheiro" type="button">Dinheiro</button>
+                        <button class="filter-option" data-type="paymentMethod" data-value="Cartão" type="button">Cartão</button>
+                        <button class="filter-option" data-type="paymentMethod" data-value="Boleto" type="button">Boleto</button>
+                        <button class="filter-option" data-type="paymentMethod" data-value="Transferência" type="button">Transferência</button>
+                    </div>
+                    <div class="filter-column">
+                        <span class="filter-column-title">Status</span>
+                        <button class="filter-option" data-type="status" data-value="Pendente" type="button">Pendente</button>
+                        <button class="filter-option" data-type="status" data-value="Parcial" type="button">Parcial</button>
+                        <button class="filter-option" data-type="status" data-value="Pago" type="button">Pago</button>
+                    </div>
+                    <div class="filter-column">
+                        <span class="filter-column-title">Prazo</span>
+                        <button class="filter-option" data-type="atrasado" data-value="true" type="button">Atrasado</button>
+                        <button class="filter-option" data-type="atrasado" data-value="false" type="button">Em dia</button>
+                    </div>
+                </div>
             </div>
             
             <div class="top-actions">
